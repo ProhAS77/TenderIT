@@ -1,0 +1,22 @@
+<!-- новый вариант -->
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<h1>Подробнее о задаче:</h1>
+<h5>Автор: {{ task.author }}
+<h5>Категория: {{ task.category }}</h5>
+<h5>Описание: {{ task.task }}</h5>
+<h5>Дата создания: {{ task.create }}</h5>
+<h5>Выполнить до: {{ task.end_date }}</h5>
+<h5>Исполнение:
+    {% if task.is_complete == False %}
+    В работе
+    {% else %}
+    Выполнено
+    {% endif %}</h5><br>
+<a class="btn btn-outline-primary" href="{% url 'tasks' %}">Назад</a>
+
+{% endblock %}

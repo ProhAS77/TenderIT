@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список задач</title>
+</head>
+<body>
+    <h1>Список задач</h1>
+    <ul>
+        {% for task in tasks %}
+        <li>{{ task.category }}
+        <br>{{ task.task_description }}
+        <br>Задача от {{ task.start_date }}. Выполнить до: {{ task.deadline }}
+        <br>Исполнитель: {{ task.executor_name }}
+        <br>{{ task.is_overdue }}</li>
+        <br>
+        {% endfor %}
+    </ul>
+</body>
+</html>

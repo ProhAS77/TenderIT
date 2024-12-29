@@ -1,0 +1,19 @@
+<!-- новый вариант -->
+
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>Добавить задачу</h1>
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Добавить</button>
+        <span>{{ error }}</span>
+    </form>
+<br>
+    <a class="btn btn-outline-primary" href="{% url 'tasks' %}">Назад</a>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+    <h3 class="display-4 fw-normal text-body-emphasis">О проекте</h3>
+<p class=my_style>
+    Проект "TenderID" реализован для помощи закупочным подразделений, а также непосредственно связяанных с планированием
+        и проведением закупок в поиске необходимой информации, планирвоании своего времени, а также для анализа эффективности
+        закупчной деятельности  "Общества"</p>
+    <br>
+</div>
+
+<div class="container px-4 py-5" id="featured-3">
+    <h2 class="pb-2 border-bottom">Навигация</h2>
+
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+          <!--<svg class="bi" width="1em" height="1em"><use xlink:href="#collection"></use></svg> -->
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Информация</h3>
+        <p>Содержит всю самую необходимую нормативную документацию по закупочной деятельности</p>
+      </div>
+
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+          <!--<svg class="bi" width="1em" height="1em"><use xlink:href="#people-circle"></use></svg>-->
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Задачи</h3>
+        <p>Создавай свой список задач и расставляй приоритеты, удаляй и обновляй</p>
+      </div>
+
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+          <!--<svg class="bi" width="1em" height="1em"><use xlink:href="#toggles2"></use></svg>-->
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Поиск закупки</h3>
+        <p> По номеру сможешь найти информацию о закупке из любого места, не только в рабочее время</p>
+      </div>
+
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+          <!--<svg class="bi" width="1em" height="1em"><use xlink:href="#toggles2"></use></svg>-->
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Анализ</h3>
+        <p>Поможет в анализе закупочной деятельности филиалов "Общества". Выявит тенденцию и покажет слабые стороны при планировании и проведении закупок </p>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+

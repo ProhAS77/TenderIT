@@ -1,0 +1,133 @@
+<!-- новый вариант -->
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+
+{% if request.user.is_authenticated %}
+<!--<p> {{ request.user }}</p> отображает пользователя / учитывается сессии-->
+<!-- <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Выход</button>
+</form>
+
+{% else %}
+<a href="{% url 'login' %}">Войти/Зарегистрироваться</a>
+{% endif %}
+<hr> -->
+
+<div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+    <h3 class="display-4 fw-normal text-body-emphasis">Менеджер задач</h3>
+    <h5>Пользователь: {{ request.user }}</h5>
+</div>
+<p class=my_style>
+   Если вы решили что-то сделать, но не начали это делать в течение 72 часов.<br>
+       В 85% случаев вы не сделаете это никогда!</p>
+   <a class="btn btn-outline-primary" href="{% url 'create' %}">Добавить новую задачу</a>
+
+<p></p>
+<div class="row mb-3 text-center">
+<div class="col-6 col-md-4 themed-grid-col">
+<div class="d-flex text-body-secondary pt-3">
+      <svg class='task-complete-icon'></svg>
+      <p class="pb-3 mb-0 lh-sm border-bottom">-задача выполнена</p>
+    </div></div>
+
+<div class="col-6 col-md-4 themed-grid-col">
+<div class="d-flex text-body-secondary pt-3">
+      <svg class='task-incomplete-icon'></svg>
+      <p class="pb-3 mb-0 lh-sm border-bottom">-задача мне</p>
+    </div></div>
+
+<div class="col-6 col-md-4 themed-grid-col">
+<div class="d-flex text-body-secondary pt-3">
+      <svg class='task-my-icon'></svg>
+      <p class="pb-3 mb-0 lh-sm border-bottom">-моя задача</p>
+    </div></div>
+
+</div>
+
+
+
+<form method="get">
+    <input type="text" name="search-area" value="{{ search_input }}">
+    <input type="submit" value="Поиск" >
+</form>
+
+<p></p>
+<p>Не завершено задач: {{ count }} </p>
+
+<main class="conteiner vertical-align: middle">
+      <div class="table-responsive small">
+        <table class="table table-striped table-sm">
+          <thead>
+
+    <tr>
+        <th> </th>
+        <th>Категория</th>
+        <th>Задача</th>
+        <th>Исполнитель</th>
+            <!--{% if request.user.is_superuser %}
+        <th>Исполнитель</th>
+            {% endif %}-->
+        <th>Автор</th>
+        <th>Дата создания</th>
+        <th>Выполнить до</th>
+        <th>Осталось дней</th>
+        <th>Действия</th>
+    </tr>
+
+    {% for el in tasks %}
+    <tr>
+        <td>
+        {% if el.is_complete %}
+            <div class="task-complete-icon"></div>
+        {% elif el.user != request.user %}
+            <div class="task-incomplete-icon"></div>
+        {% else %}
+            <div class="task-my-icon"></div>
+
+        {% endif %} </td>
+
+        <td>{{ el.category }}</td>
+        <td>{{ el.task }}</td>
+        <td>{{ el.user }}</td>
+            <!--{% if request.user.is_superuser %}
+        <td>{{ el.user }}</td>
+            {% endif %}-->
+
+        <td>{{ el.author }}</td>
+        <td>{{ el.create|date:"d.m.Y" }}</td>
+        <td>{{ el.end_date|date:"d.m.Y" }}</td>
+        <td>{{ el.get_days_left }}</td>
+        <td>
+           <a href="{% url 'update_complete' task_id=el.id %}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+  <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+</svg></a>
+            <a href="{% url 'task' el.id %}" title="Подробнее"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+  <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+</svg></a>
+        <a href="{% url 'update' el.id %}" title="Редактировать"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+</svg></a>
+            {% if request.user.is_superuser or request.user.username == el.author  %}
+        <a href="{% url 'delete' el.id %}" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+  <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+</svg></a>
+            {% endif %}
+        </td>
+    </tr>
+
+    {% empty %}
+        <p>Нет задач</p>
+    {% endfor %}
+
+     </thead>
+        </table>
+      </div>
+</main>
+
+{% endblock %}

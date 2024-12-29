@@ -1,0 +1,16 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<a class="btn btn-outline-primary" href="{% url 'tasks' %}">Назад</a>
+
+<form method="post">
+    {% csrf_token %}
+    <p>Вы уверены, что хотите удалить эту задачу? <br>
+        "{{ task }}" </p>
+    <button type="submit" class="btn btn-success">Удалить</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+        <h3 class="display-4 fw-normal text-body-emphasis">Поиск закупок</h3>
+    </div>
+
+    {% if request.user.is_superuser %}
+       <p>Загрузи стандартную выгрузку из системы.<br></p>
+       <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-outline-primary">Загрузить</button>
+        </form>
+    {% endif %}
+
+
+
+
+
+
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Поиск</button>
+    </form>
+
+    {% if result %}
+        <h2>Результаты поиска:</h2>
+        {% if result.error %}
+            <p>{{ result.error }}</p>
+        {% else %}
+            <ul>
+                <li>ППЗ: {{ result.Номер_ПЗ }}</li>
+                {% if result.Раздел_плана == "2.3" %}
+                    <li>Номер потребности: {{ result.Замечание_заказчика }}</li>
+                {% endif %}
+                <li>Предмет: {{ result.Предмет_договора }}</li>
+                <li>Способ закупки: {{ result.Способ_закупки }}</li>
+
+                {% if result.Способ_закупки != "Конкурентный отбор" or result.Способ_закупки != "Маркетинговые исследования" %}
+                <li>Способ закупки: {{ result.Наимен_Основ_Закупки_у_ЕП }}</li>
+                {% endif %}
+
+                <li>Статус закупки: {{ result.Статус_закупки }}</li>
+                <li>Дата статуса: {{ result.Дата_статуса }}</li>
+                <li>Плановая цена(без НДС): {{ result.Последняя_утвержденная_цена }}</li>
+                <li>Сроки начала/окончания работ (поставки): {{ result.Начало_поставки }}/{{ result.Окончание_поставки }}</li>
+
+                {% if (result.Способ_закупки == "Конкурентный отбор" or result.Способ_закупки == "Маркетинговые исследования")
+                and result.Статус_закупки == "ППЗ утверждена" %}
+                    <li>Публикация ЗП:
+                        {% if result.ЗП_публиковалась is None %}
+                         не опубликована
+                        {% else %}
+                         опубликована
+                        {% endif %}</li>
+
+                    <li>Статус ЗП: {{ result.Текущий_статус_ЗП }}</li>
+                {% endif %}
+
+            </ul>
+
+    {% endif %}
+
+</body>
+</html>
+
+
+{% endblock %}
+
