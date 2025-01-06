@@ -1,30 +1,33 @@
-from datetime import datetime, date
+import matplotlib.pyplot as plt
+import os
+import openpyxl
+import re
+import pandas as pd
+import matplotlib
 
+matplotlib.use('Agg')
+
+from datetime import datetime
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from .models import Task
 from .forms import TaskForm, FileForm, TaskUpForm, SearchForm
-from django.views.generic.list import ListView #new
-from django.views.generic.detail import DetailView #new подробное представление задачи
-from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView  #new подробное представление задачи
-from django.urls import reverse_lazy #new
-from django.contrib.auth.views import LoginView #new
-from django.contrib.auth.mixins import LoginRequiredMixin #new для ограничения доступа на страницу, добавляем в class TaskList
-from django.contrib.auth.forms import UserCreationForm  #new автоматическая форма создания пользователя
-from django.contrib.auth import login #new при регистрации автоматически войдет в систему
-from django.utils import timezone
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView  # подробное представление задачи
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
+from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin  # для ограничения доступа на страницу
+from django.contrib.auth.forms import UserCreationForm  # автоматическая форма создания пользователя
+from django.contrib.auth import login  # при регистрации автоматически войдет в систему
 from django.http import FileResponse, Http404
-import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+
 
 class CustomLoginView(LoginView):
     template_name = 'main/login.html'
     fields = '__all__'
-    redirect_authenticated_user = True #неаутентифицированные пользователи не смогут зайти на страницу
+    redirect_authenticated_user = True  # неаутентифицированные пользователи не смогут зайти на страницу
 
     def get_success_url(self):
         return reverse_lazy('tasks')
@@ -33,7 +36,7 @@ class CustomLoginView(LoginView):
 class RegisterPage(FormView):
     template_name = 'main/register.html'
     form_class = UserCreationForm
-    redirect_authenticated_user = True #если пользователь
+    redirect_authenticated_user = True
     success_url = reverse_lazy('tasks')
 
     def form_valid(self, form):
@@ -42,17 +45,17 @@ class RegisterPage(FormView):
             login(self.request, user)
         return super(RegisterPage, self).form_valid(form)
 
-    def get(self, *args, **kwargs): #создаем свою функцию для перенаправления авторизованного пользователя на список задач. Страница регистрации и входа недоступны
+    def get(self, *args, **kwargs):  # функция для перенаправления авторизованного пользователя на список задач
         if self.request.user.is_authenticated:
             return redirect('tasks')
         return super(RegisterPage, self).get(*args, **kwargs)
 
 
-class TaskList(LoginRequiredMixin, ListView): #представление списка ищет шaблон с профиксом _list: main/task_list.html + ограничения на доступ -> перенаправление на страницу login (см settings.py LOGIN_URL)
+class TaskList(LoginRequiredMixin, ListView):  # ищет шaблон с профиксом _list: main/task_list.html + ограничения на доступ -> перенаправление на страницу login (см settings.py LOGIN_URL)
     model = Task
-    context_object_name = 'tasks' #изменение названия объекта TaskList
+    context_object_name = 'tasks'  # изменение названия объекта TaskList
 
-    def get_context_data(self, **kwargs):  #для настройки вывода списка задач только зарегистрированного пользователя
+    def get_context_data(self, **kwargs):  # для настройки вывода списка задач только зарегистрированного пользователя
         context = super().get_context_data(**kwargs)
         if self.request.user.is_superuser:
             context['tasks'] = context['tasks'].all()
@@ -63,25 +66,24 @@ class TaskList(LoginRequiredMixin, ListView): #представление спи
 
         search_input = self.request.GET.get('search-area') or ''
         if search_input:
-            context['tasks'] = context['tasks'].filter(task__iregex=search_input) #поиск __icontains - "содердит", если нужно с начала, то __startswith
+            context['tasks'] = context['tasks'].filter(task__iregex=search_input)
 
         context['search_input'] = search_input
 
         return context
 
 
-class TaskDetail(LoginRequiredMixin, DetailView):  #представление ищет шaблон с профиксом _detail: main/task_detail.html + ограничения на доступ -> перенаправление на страницу login (см settings.py LOGIN_URL)
+class TaskDetail(LoginRequiredMixin, DetailView):  # ищет шaблон с профиксом _detail: main/task_detail.html + ограничения на доступ -> перенаправление на страницу login (см settings.py LOGIN_URL)
     model = Task
     context_object_name = 'task'
 
 
-class TaskCreate(LoginRequiredMixin, CreateView):  #представление ищет шaблон с профиксом _form. автоматически создает поля модели
+class TaskCreate(LoginRequiredMixin, CreateView):  # ищет шaблон с профиксом _form. автоматически создает поля модели
     model = Task
-    #fields = ['user', 'category', 'title', 'task', 'end_date'] #если не нужны все поля, а только определенные
     form_class = TaskForm
-    success_url = reverse_lazy('tasks')#ленивый реверс, перенаправления на страницу
+    success_url = reverse_lazy('tasks')  # ленивый реверс, перенаправления на страницу
 
-    def form_valid(self, form): # для автоматического заполнения поля author и user , метод есть в классе CreateView
+    def form_valid(self, form):  # для автоматического заполнения поля author и user , метод есть в классе CreateView
         if self.request.user:
             form.instance.author = self.request.user
         if form.instance.user is None:
@@ -89,25 +91,24 @@ class TaskCreate(LoginRequiredMixin, CreateView):  #представление �
         return super(TaskCreate, self).form_valid(form)
 
 
-class TaskUpdate(LoginRequiredMixin, UpdateView):  #представление ищет шaблон с профиксом _form. автоматически создает поля модели
+class TaskUpdate(LoginRequiredMixin, UpdateView):  # ищет шaблон с профиксом _form. автоматически создает поля модели
     template_name = 'main/task_form_update.html'
     model = Task
     form_class = TaskUpForm
-    #fields = ['user', 'category', 'title', 'task', 'end_date', 'is_complete']
-    success_url = reverse_lazy('tasks')#ленивый реверс, перенаправления на страницу
+    success_url = reverse_lazy('tasks')  # ленивый реверс, перенаправления на страницу
 
 
-def update(request, task_id):
+def update(request, task_id): # Для реализации галочки "Выполнено"
     task = Task.objects.get(id=task_id)
     task.is_complete = not task.is_complete
     task.save()
     return redirect('tasks')
 
 
-class TaskDelete(LoginRequiredMixin, DeleteView):#представление ищет шaблон с профиксом _confirm_delete
+class TaskDelete(LoginRequiredMixin, DeleteView):  # ищет шaблон с префиксом _confirm_delete
     model = Task
     context_object_name = 'task'
-    success_url = reverse_lazy('tasks') #ленивый реверс, перенаправления на страницу после удаления задачи
+    success_url = reverse_lazy('tasks')  # ленивый реверс, перенаправления на страницу после удаления задачи
 
 
 def index(request):
@@ -117,84 +118,60 @@ def index(request):
 
 def search(request):
     result_dict = None  # Инициализация переменной для хранения результата
-    form = SearchForm()
+    form_search = SearchForm()
+    form_upload = FileForm()  # Форма для загрузки файла
+    upload_success = False  # Переменная для сообщения о загрузке файла
+    is_admin = request.user.is_superuser or request.user.groups.filter(name='Администратор').exists()
 
     if request.method == 'POST':
-        form = SearchForm(request.POST)
-        if form.is_valid():  # Проверяем валидность формы
-            ppz_number = form.cleaned_data['ppz_number']
-            # print(f"Поиск по номеру ПЗ: {ppz_number}")  # Отладочный вывод
-            # Предполагаем, что файл загружен суперпользователем и доступен для чтения
-            try:
-                df = pd.read_excel('media/SVOD.xlsx')  # Путь к загруженному файлу
-                result = df[df['Номер ПЗ'] == ppz_number]  # Предполагаем, что 'Номер ПЗ' - это название столбца
-                #print(f"Найдено записей: {len(result)}")  # Отладочный вывод
-                #print(df.dtypes)# вывод типов данных дл я проверки
-                if not result.empty:
-                    result_dict = result.iloc[0].to_dict()  # Получаем первую найденную запись как словарь
-                    result_dict = {key.replace(' ', '_'): value for key, value in result_dict.items()}
-                    # print(f"Результат: {result_dict}")# Отладочный вывод
-                else:
-                    result_dict = {'error': 'Запись не найдена.'}  # Если запись не найдена
-            except FileNotFoundError:
-                result_dict = {'error': 'Файл не найден. Убедитесь, что он загружен суперпользователем.'}
-            except Exception as e:
-                result_dict = {'error': str(e)}  # Обработка других исключений
+        if 'upload' in request.POST:  # Проверяем, была ли отправлена форма загрузки
+            form_upload = FileForm(request.POST, request.FILES)
+            if form_upload.is_valid():
+                uploaded_file = request.FILES['file']
+                fs = FileSystemStorage()
+                uploaded_file_path = os.path.join(fs.location, 'SVOD.xlsx')
+
+                # Сохраняем файл на сервере
+                with open(uploaded_file_path, 'wb+') as destination:
+                    for chunk in uploaded_file.chunks():
+                        destination.write(chunk)
+                upload_success = True  # Устанавливаем переменную, чтобы отобразить сообщение
+
+        else:  # Обработка формы поиска
+            form_search = SearchForm(request.POST)
+            if form_search.is_valid():  # Проверяем валидность формы
+                ppz_number = form_search.cleaned_data['ppz_number']
+                try:
+                    df = pd.read_excel('media/SVOD.xlsx')  # Путь к загруженному файлу
+                    result = df[df['Номер ПЗ'] == ppz_number]  # Предполагаем, что 'Номер ПЗ' - это название столбца
+                    if not result.empty:
+                        result_dict = result.iloc[0].to_dict()  # Получаем первую найденную запись как словарь
+                        result_dict = {key.replace(' ', '_'): value for key, value in result_dict.items()}
+                    else:
+                        result_dict = {'error': 'Запись не найдена.'}  # Если запись не найдена
+                except FileNotFoundError:
+                    result_dict = {'error': 'Файл не найден. Убедитесь, что он загружен администратором.'}
+                except Exception as e:
+                    result_dict = {'error': str(e)}  # Обработка других исключений
 
     context = {
         'title': 'Поиск закупки',
-        'form': form,
+        'form2': form_search,  # Форма для поиска
+        'form_upload': form_upload,  # Форма для загрузки файла
         'result': result_dict,  # Результат поиска
+        'upload_success': upload_success,  # Передаем переменную для сообщения
+        'is_admin': is_admin,  # Передаем переменную в контекст
     }
     return render(request, 'main/search.html', context)
 
-    #
-    # if request.method == 'POST':
-    #     form = FileForm(request.POST, request.FILES)
-    #     if form.is_valid():
-    #         file = form.cleaned_data['file']
-    #         fs = FileSystemStorage()
-    #         fs.save('SVOD.xlsx', file)
-    #
-    #         form2 = SearchForm(request.POST)
-    #         if form2.is_valid():
-    #             ppz_number = form2.cleaned_data['ppz_number']  # Получаем номер ППЗ из формы
-    #             # Чтение данных из Excel
-    #             df = pd.read_excel('media/SVOD.xlsx')  # Убедитесь, что путь правильный
-    #             # Выполняем поиск по DataFrame
-    #             result = df[df['Номер ПЗ'] == ppz_number]  # Предполагаем, что 'ППЗ' - это название столбца
-    #             if not result.empty:
-    #                 result = result.iloc[0]  # Получаем первую найденную запись
-    #                 result_dict = {key.replace(' ', '_'): value for key, value in result.items()}   # Преобразуем Series в словарь
-    #             else:
-    #                 result_dict = None  # Если запись не найдена
-    #     else:
-    #         result_dict = None  # Если форма не валидна
-    # else:
-    #     form = FileForm()
-    #     result_dict = None  # Инициализируем результат как None
-    #
-    # context = {'title': 'Поиск закупки',
-    #            'form': form,
-    #            'result': result_dict,
-    #            }
-    # return render(request, 'main/search.html', context)
-
 
 def upload_file(request):
-    import openpyxl
-    from datetime import datetime
-    import re
-    import os
-
     if request.method == 'POST':
         form = FileForm(request.POST, request.FILES)
+
         if form.is_valid():
             file = form.cleaned_data['file']
             fs = FileSystemStorage()
-
-            #time = datetime.now()  # время начала выполнения
-           # print(time)
 
             uploaded_file_path = os.path.join(fs.location, 'Аnalis.xlsx')
 
@@ -203,13 +180,13 @@ def upload_file(request):
                     destination.write(chunk)
 
             flag = False
+
             # Обработка загруженного файла
-            #wb = openpyxl.load_workbook(os.path.join(fs.location, filename))  # Используем полный путь к файлу
             wb = openpyxl.load_workbook(uploaded_file_path)  # Используем полный путь к файлу
             sheet = wb.active
 
-            #start_time = datetime.now()  # время начала выполнения
-            #print(start_time)
+            start_time = datetime.now()  # время начала выполнения
+            # print(start_time)
 
             # Получаем наименования столбцов
             headers = {cell.value: cell.column for cell in sheet[1]}  # Словарь с наименованиями столбцов и их номерами
@@ -220,8 +197,8 @@ def upload_file(request):
             max_column = sheet.max_column
 
             # Название для предпоследнего столбца
-            sheet.cell(row=1, column=max_column+1, value='Количество доработок')
-            sheet.cell(row=1, column=max_column+2, value='Доработки подробно')
+            sheet.cell(row=1, column=max_column + 1, value='Количество доработок')
+            sheet.cell(row=1, column=max_column + 2, value='Доработки подробно')
 
             if column_index is None:
                 return render(request, 'main/analysis.html',
@@ -264,16 +241,16 @@ def upload_file(request):
                         dorabotka_date = dates[j][1]
                         count += 1
 
-                    elif (dates[j][0] == '«Анализ цены Д647 Назначение исполнителя»' or dates[j][
-                        0] == '«Формирование ППЗ Заказчиком Согласование тендерного подразделения»') and dorabotka_date:
-                        # «Формирование ППЗ Заказчиком Согласование тендерного подразделения» - не совсем корректный статус
+                    elif (dates[j][0] == '«Анализ цены Д647 Назначение исполнителя»' or dates[j][0]
+                          == '«Формирование ППЗ Заказчиком Согласование тендерного подразделения»') and dorabotka_date:
                         back_date = dates[j][1]
 
                         if dorabotka_date and back_date:
                             dorabotka_date = datetime.strptime(dorabotka_date, '%d.%m.%Y')
                             back_date = datetime.strptime(back_date, '%d.%m.%Y')
                             difference = back_date - dorabotka_date
-                            res += f'Доработка №{count}: {difference.days} дн. Месяц направления на доработку - {dorabotka_date.month}, месяц отработки - {back_date.month};\n'
+                            res += (f'Доработка №{count}: {difference.days} дн. Месяц направления на доработку - '
+                                    f'{dorabotka_date.month}, месяц отработки - {back_date.month};\n')
 
                 if back_date == None and dorabotka_date:
                     if sheet.cell(row=i + 1, column=7).value != 'ППЗ утверждена':
@@ -292,61 +269,64 @@ def upload_file(request):
 
                 # считаем количество доработок всего
                 count_back.add(count)
-                cell2 = sheet.cell(row=i + 1, column=max_column+1)
+                cell2 = sheet.cell(row=i + 1, column=max_column + 1)
                 cell2.value = max(count_back)
 
                 # выводим информацию о доработках
-                cell = sheet.cell(row=i + 1, column=max_column+2)
+                cell = sheet.cell(row=i + 1, column=max_column + 2)
                 cell.value = res
 
-
         # Сохраняем результат
-        #directory = fs.location # Получаем директорию, где был сохранён исходный файл
         result_file_path = os.path.join(fs.location, 'Result.xlsx')
         wb.save(result_file_path)
 
         flag = True
 
-        #end_time = datetime.now()  # время окончания выполнения
-       # execution_time = end_time - start_time
-       # print(f'Обработано {sheet.max_row - 1} позитиций за {execution_time} секунд')
+        end_time = datetime.now()  # время окончания выполнения
+        execution_time = end_time - start_time
+        quantity = sheet.max_row - 1
 
         # Вернуть результат
-        context = {'title': 'Анализ', 'form': form, 'result': formatted_data, 'flag': flag,}
+        context = {'title': 'Анализ',
+                   'form': form,
+                   'result': formatted_data,
+                   'flag': flag,
+                   'time': execution_time,
+                   'quantity': quantity,
+                   }
         return render(request, 'main/analysis.html', context)
 
     else:
         form = FileForm()
-    #
-    #
+
     # Читаем данные из Excel
     data = pd.read_excel(os.path.join(FileSystemStorage().location, 'Result.xlsx'))
+
     # Генерация графиков
     generate_charts(data)
-
 
     context = {
         'title': 'Анализ',
         'form': form,
         'data': data,
-            }
+    }
     return render(request, 'main/analysis.html', context)
 
 
 def download_file(request):
-    import os
     # Путь к файлу, который нужно скачать
     file_path = os.path.join('media/', 'Result.xlsx')
 
     # Проверяем, существует ли файл
     if os.path.exists(file_path):
         # Возвращаем файл как ответ
-        response = FileResponse(open(file_path, 'rb'), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response = FileResponse(open(file_path, 'rb'),
+                                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="Result.xlsx"'
         return response
     else:
         # Если файл не найден, возвращаем 404 ошибку
-        raise Http404("File does not exist")
+        raise Http404("Файл не найден")
 
 
 def generate_charts(data):
@@ -396,7 +376,7 @@ def generate_charts(data):
     plt.savefig('media/pie_chart_status_by_procurement.png')
     plt.close()
 
-    # Пример генерации точечной диаграммы
+    # Генерация точечной диаграммы
     grouped_data = data.groupby('Наименование филиала')['Количество доработок'].sum().reset_index()
     grouped_data2 = data.groupby('Наименование филиала')['Количество доработок'].count().reset_index()
 
@@ -446,4 +426,3 @@ def generate_charts(data):
 def about(request):
     context = {'title': 'О проекте'}
     return render(request, 'main/about.html', context)
-

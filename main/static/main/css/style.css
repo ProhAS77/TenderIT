@@ -4,8 +4,6 @@ p.my_style {
 
 }
 
-
-
 .task-complete-icon {
     height: 20px;
     width: 20px;
@@ -32,3 +30,10 @@ p.my_style {
   width: 100%;
 }
 
+.task-cell {
+    vertical-align: top;
+}
+
+.min-height-item {
+    min-height: 100px;
+}

@@ -35,8 +35,10 @@ class Migration(migrations.Migration):
                 ('create', models.DateField(auto_now_add=True)),
                 ('end_date', models.DateField(verbose_name='Выполнить до')),
                 ('end_completion', models.CharField(default='', max_length=20, verbose_name='Осталось дней')),
-                ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='main.category', verbose_name='Категория')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Исполнитель')),
+                ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
+                                               to='main.category', verbose_name='Категория')),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                           to=settings.AUTH_USER_MODEL, verbose_name='Исполнитель')),
             ],
             options={
                 'verbose_name': 'Задача',

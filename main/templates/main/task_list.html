@@ -1,22 +1,11 @@
-<!-- новый вариант -->
 {% extends 'main/base.html' %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
 
-
 {% if request.user.is_authenticated %}
-<!--<p> {{ request.user }}</p> отображает пользователя / учитывается сессии-->
-<!-- <form action="{% url 'logout' %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Выход</button>
-</form>
 
-{% else %}
-<a href="{% url 'login' %}">Войти/Зарегистрироваться</a>
-{% endif %}
-<hr> -->
 
 <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
     <h3 class="display-4 fw-normal text-body-emphasis">Менеджер задач</h3>
@@ -49,8 +38,6 @@
 
 </div>
 
-
-
 <form method="get">
     <input type="text" name="search-area" value="{{ search_input }}">
     <input type="submit" value="Поиск" >
@@ -67,11 +54,8 @@
     <tr>
         <th> </th>
         <th>Категория</th>
-        <th>Задача</th>
+        <th class="task-column" style="width: 200px;">Задача</th>
         <th>Исполнитель</th>
-            <!--{% if request.user.is_superuser %}
-        <th>Исполнитель</th>
-            {% endif %}-->
         <th>Автор</th>
         <th>Дата создания</th>
         <th>Выполнить до</th>
@@ -81,7 +65,7 @@
 
     {% for el in tasks %}
     <tr>
-        <td>
+        <td class="task-cell">
         {% if el.is_complete %}
             <div class="task-complete-icon"></div>
         {% elif el.user != request.user %}
@@ -91,18 +75,14 @@
 
         {% endif %} </td>
 
-        <td>{{ el.category }}</td>
-        <td>{{ el.task }}</td>
-        <td>{{ el.user }}</td>
-            <!--{% if request.user.is_superuser %}
-        <td>{{ el.user }}</td>
-            {% endif %}-->
-
-        <td>{{ el.author }}</td>
-        <td>{{ el.create|date:"d.m.Y" }}</td>
-        <td>{{ el.end_date|date:"d.m.Y" }}</td>
-        <td>{{ el.get_days_left }}</td>
-        <td>
+        <td class="task-cell">{{ el.category }}</td>
+        <td class="task-cell">{{ el.task }}</td>
+        <td class="task-cell">{{ el.user }}</td>
+        <td class="task-cell">{{ el.author }}</td>
+        <td class="task-cell">{{ el.create|date:"d.m.Y" }}</td>
+        <td class="task-cell">{{ el.end_date|date:"d.m.Y" }}</td>
+        <td class="task-cell">{{ el.get_days_left }}</td>
+        <td class="task-cell">
            <a href="{% url 'update_complete' task_id=el.id %}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
   <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
 </svg></a>
@@ -129,5 +109,6 @@
         </table>
       </div>
 </main>
+    {% endif %}
 
 {% endblock %}

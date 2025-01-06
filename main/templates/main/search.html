@@ -7,27 +7,34 @@
         <h3 class="display-4 fw-normal text-body-emphasis">Поиск закупок</h3>
     </div>
 
-    {% if request.user.is_superuser %}
-       <p>Загрузи стандартную выгрузку из системы.<br></p>
-       <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-outline-primary">Загрузить</button>
-        </form>
+{% if request.user.is_authenticated %}
+
+    {% if upload_success %}
+        <p class="alert alert-success">Файл загружен</p>  <!-- Сообщение о загрузке файла -->
     {% endif %}
 
+<div>
+   {% if is_admin %}
+        <p class=my_style>{{ request.user }}, у тебя достаточно прав на обновление данных о закупочных процедурах.<br>
+            Загрузи стандартную выгрузку из системы</p>
 
-
-
-
-
-
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form_upload.as_p }} <!-- Форма для загрузки файла-->
+            <button type="submit" name="upload" class="btn btn-outline-primary">Загрузить</button>
+        </form>
+    {% else %}
+    <p class=my_style>Данные ежедневно обновляется администратором</p>
+    {% endif %}
+<br>
+    <br>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Поиск</button>
+        {{ form2.as_p }}  <!-- Форма для поиска -->
+        <button type="submit" class="btn btn-outline-primary">Поиск</button>
     </form>
 
+    <main class="conteiner vertical-align: middle">
     {% if result %}
         <h2>Результаты поиска:</h2>
         {% if result.error %}
@@ -35,14 +42,14 @@
         {% else %}
             <ul>
                 <li>ППЗ: {{ result.Номер_ПЗ }}</li>
-                {% if result.Раздел_плана == "2.3" %}
+                {% if result.Раздел_плана == 2.3 %}
                     <li>Номер потребности: {{ result.Замечание_заказчика }}</li>
                 {% endif %}
                 <li>Предмет: {{ result.Предмет_договора }}</li>
                 <li>Способ закупки: {{ result.Способ_закупки }}</li>
 
-                {% if result.Способ_закупки != "Конкурентный отбор" or result.Способ_закупки != "Маркетинговые исследования" %}
-                <li>Способ закупки: {{ result.Наимен_Основ_Закупки_у_ЕП }}</li>
+                {% if result.Способ_закупки == 'Закупка у ЕП' or result.Способ_закупки == 'Безальтернативная закупка' %}
+                <li>Пункт положения: {{ result.Наимен_Основ_Закупки_у_ЕП }}</li>
                 {% endif %}
 
                 <li>Статус закупки: {{ result.Статус_закупки }}</li>
@@ -50,25 +57,27 @@
                 <li>Плановая цена(без НДС): {{ result.Последняя_утвержденная_цена }}</li>
                 <li>Сроки начала/окончания работ (поставки): {{ result.Начало_поставки }}/{{ result.Окончание_поставки }}</li>
 
-                {% if (result.Способ_закупки == "Конкурентный отбор" or result.Способ_закупки == "Маркетинговые исследования")
-                and result.Статус_закупки == "ППЗ утверждена" %}
+                {% if result.Способ_закупки == 'Конкурентный отбор' or result.Способ_закупки == 'Маркетинговые исследования' or result.Способ_закупки == 'Закупка Торгового портала' %}
+                    {% if result.Статус_закупки == 'ППЗ утверждена' %}
                     <li>Публикация ЗП:
-                        {% if result.ЗП_публиковалась is None %}
-                         не опубликована
-                        {% else %}
+                        {% if result.ЗП_публиковалась == 'X' %}
                          опубликована
-                        {% endif %}</li>
-
-                    <li>Статус ЗП: {{ result.Текущий_статус_ЗП }}</li>
+                        <li>Статус ЗП: {{ result.Текущий_статус_ЗП }}</li>
+                        {% else %}
+                         не опубликована
+                        {% endif %} </li>
+                    {% endif %}
                 {% endif %}
 
             </ul>
+        {% endif %}
+        {% endif %}
+    </main>
+</div>
 
+{% else %}
+    <p class=my_style>
+   Доступ только для зарегистрированных и авторизованных пользователей</p>
     {% endif %}
 
-</body>
-</html>
-
-
 {% endblock %}
-
