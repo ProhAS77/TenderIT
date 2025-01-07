@@ -20,17 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-7ey40410mimf*lld_envcqk$&mf(+^jq9qh1)(2=ki&uvjcq+#' #отключили перед развертыванием
-SECRET_KEY = os.getenv('SECRET_KEY') #добавили перед развертыванием
-
-SESSION_COOKIE_SECURE = True #добавили перед развертыванием
-CSRF_COOKIE_SECURE = True #добавили перед развертыванием
+SECRET_KEY = 'django-insecure-7ey40410mimf*lld_envcqk$&mf(+^jq9qh1)(2=ki&uvjcq+#' 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False #изменен перед развертыванием проекта на сервере
 
-ALLOWED_HOSTS = ['127.0.0.1',
-                 'pas312.pythonanywhere.com']#изменен перед развертыванием проекта на сервере
+ALLOWED_HOSTS = ['*']#изменен перед развертыванием проекта на сервере
 
 
 # Application definition
@@ -82,17 +77,8 @@ WSGI_APPLICATION = 'Tender_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        #'NAME': BASE_DIR / 'db.sqlite3',# изменено перед развертыванием
-        'NAME': 'Pas312$default', # добавлено перед развертыванием
-        'USER': 'Pas312', # добавлено перед развертыванием
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'), # добавлено перед развертыванием
-        'HOST': 'Pas312.mysql.pythonanywhere-services.com', # добавлено перед развертыванием
-        'OPTIONS': {
-            'init_command': "SET NAMES 'utf8mb4';SET sql_mode='STRICT_TRANS_TABLES'", # добавлено перед развертыванием
-            'charset': 'utf8mb4', # добавлено перед развертыванием
-        },
-    }
-}
+        'NAME': BASE_DIR / 'db.sqlite3',
+        }}
 
 
 # Password validation
